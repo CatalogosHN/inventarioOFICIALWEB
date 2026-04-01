@@ -136,6 +136,10 @@
       width:100%;max-height:62vh;object-fit:cover;border-radius:20px;background:#09111d;border:1px solid var(--line)
     }
     .camera-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    #cameraModal .modal-card, #cameraModal .camera-actions, #cameraModal button, #cameraModal video{
+      position:relative; z-index:1;
+    }
+    #cameraModal button{pointer-events:auto; touch-action:manipulation}
 
     @media (max-width:1280px){
       .layout,.topbar,.sale-layout,.login-grid,.grid-6,.toolbar,.product-grid{grid-template-columns:1fr}
@@ -453,6 +457,8 @@
                 <h2 style="margin:0">Carrito</h2>
                 <span class="chip warn" id="cartCount">0 items</span>
               </div>
+
+              <div class="mini-note" style="margin-top:8px">El <strong>costo de inversión</strong> se mantiene fijo. El <strong>precio de venta</strong> puedes cambiarlo por producto dentro del carrito solo para esta venta.</div>
 
               <label>Cliente</label>
               <input id="saleClient" placeholder="Opcional">
@@ -1441,7 +1447,7 @@ function addToCart(id){
     if(existing.qty + 1 > Number(p.stock)) return alert("No hay suficiente stock.");
     existing.qty += 1;
   }else{
-    state.cart.push({productId:id, qty:1});
+    state.cart.push({productId:id, qty:1, unitPrice:Number(p.price || 0)});
   }
   renderSales();
 }
@@ -1456,6 +1462,25 @@ function setCartQty(id, qty){
     if(qty > Number(p.stock)) return alert("No hay suficiente stock.");
     item.qty = qty;
   }
+  renderSales();
+}
+function setCartUnitPrice(id, value){
+  const item = state.cart.find(x => x.productId === id);
+  if(!item) return;
+  const price = Number(value || 0);
+  if(price < 0){
+    alert("El precio de venta no puede ser negativo.");
+    renderSales();
+    return;
+  }
+  item.unitPrice = price;
+  renderSales();
+}
+function resetCartUnitPrice(id){
+  const p = state.products.find(x => x.id === id);
+  const item = state.cart.find(x => x.productId === id);
+  if(!p || !item) return;
+  item.unitPrice = Number(p.price || 0);
   renderSales();
 }
 function removeCartItem(id){
@@ -1491,7 +1516,8 @@ function renderSales(){
   $("cartList").innerHTML = state.cart.length ? state.cart.map(item => {
     const p = state.products.find(x => x.id === item.productId);
     if(!p) return "";
-    const total = Number(item.qty) * Number(p.price);
+    const unitPrice = Number(item.unitPrice ?? p.price ?? 0);
+    const total = Number(item.qty) * unitPrice;
     subtotal += total;
     return `
       <div class="cart-item">
@@ -1501,12 +1527,23 @@ function renderSales(){
             <div>
               <strong>${escapeHtml(p.name)}</strong>
               <div class="small muted">${escapeHtml(p.sku)} · Stock: ${Number(p.stock)}</div>
+              <div class="small muted">Costo inversión fijo: ${money(p.cost)} · Precio base: ${money(p.price)}</div>
             </div>
           </div>
           <button class="btn btn-danger" onclick="removeCartItem('${p.id}')">Quitar</button>
         </div>
         <div class="grid-2" style="margin-top:10px">
-          <input type="number" min="1" max="${Number(p.stock)}" value="${Number(item.qty)}" onchange="setCartQty('${p.id}', this.value)">
+          <div>
+            <label style="margin:0 0 6px">Cantidad</label>
+            <input type="number" min="1" max="${Number(p.stock)}" value="${Number(item.qty)}" onchange="setCartQty('${p.id}', this.value)">
+          </div>
+          <div>
+            <label style="margin:0 0 6px">Precio venta usado (L)</label>
+            <input type="number" min="0" step="0.01" value="${unitPrice}" onchange="setCartUnitPrice('${p.id}', this.value)">
+          </div>
+        </div>
+        <div class="space-between" style="margin-top:10px;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-soft" onclick="resetCartUnitPrice('${p.id}')">Restablecer precio base</button>
           <div class="note"><div class="space-between"><span>Total</span><strong>${money(total)}</strong></div></div>
         </div>
       </div>
@@ -1530,14 +1567,16 @@ function confirmSale(){
     const p = state.products.find(x => x.id === item.productId);
     if(!p) continue;
     if(Number(item.qty) > Number(p.stock)) return alert(`No hay suficiente stock para ${p.name}.`);
-    const lineTotal = Number(item.qty) * Number(p.price);
+    const unitPrice = Number(item.unitPrice ?? p.price ?? 0);
+    if(unitPrice < 0) return alert(`El precio de venta no puede ser negativo para ${p.name}.`);
+    const lineTotal = Number(item.qty) * unitPrice;
     subtotal += lineTotal;
     items.push({
       productId: p.id,
       sku: p.sku,
       name: p.name,
       qty: Number(item.qty),
-      unitPrice: Number(p.price),
+      unitPrice,
       unitCost: Number(p.cost),
       lineTotal
     });
@@ -1928,9 +1967,15 @@ function bootEvents(){
     if(e.target.id === "photoModal") closePhotoViewer();
   });
 
-  $("btnCloseCamera").addEventListener("click", closeCameraModal);
-  $("btnRetryCamera").addEventListener("click", startCameraStream);
-  $("btnCaptureCamera").addEventListener("click", captureCameraPhoto);
+  const bindTap = (id, handler) => {
+    const el = $(id);
+    if(!el) return;
+    el.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); handler(); });
+    el.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); handler(); }, {passive:false});
+  };
+  bindTap("btnCloseCamera", closeCameraModal);
+  bindTap("btnRetryCamera", startCameraStream);
+  bindTap("btnCaptureCamera", captureCameraPhoto);
   $("cameraModal").addEventListener("click", (e)=>{
     if(e.target.id === "cameraModal") closeCameraModal();
   });
@@ -1940,6 +1985,8 @@ window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.addToCart = addToCart;
 window.setCartQty = setCartQty;
+window.setCartUnitPrice = setCartUnitPrice;
+window.resetCartUnitPrice = resetCartUnitPrice;
 window.removeCartItem = removeCartItem;
 window.removeFormPhoto = removeFormPhoto;
 window.openProductPhotos = openProductPhotos;
@@ -1966,7 +2013,7 @@ window.jumpPhoto = jumpPhoto;
         <div class="title" style="font-size:1.2rem">Tomar foto</div>
         <div class="subtitle small">Usa la cámara del móvil o PC para agregar una imagen al producto.</div>
       </div>
-      <button class="btn btn-soft" id="btnCloseCamera">Cerrar</button>
+      <button class="btn btn-soft" id="btnCloseCamera" type="button">Cerrar</button>
     </div>
     <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
     <div class="camera-actions">
