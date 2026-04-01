@@ -132,11 +132,6 @@
       background:rgba(255,255,255,.03)
     }
     .paste-zone.active{border-color:rgba(108,182,255,.65);background:rgba(108,182,255,.08)}
-    .camera-video{
-      width:100%;max-height:62vh;object-fit:cover;border-radius:20px;background:#09111d;border:1px solid var(--line)
-    }
-    .camera-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    #cameraModal .modal-card, #cameraModal .camera-actions, #cameraModal button, #cameraModal video{
       position:relative; z-index:1;
     }
     #cameraModal button{pointer-events:auto; touch-action:manipulation}
@@ -350,19 +345,20 @@
                   <label>Fotos del producto</label>
                   <div class="footer-actions">
                     <button class="btn btn-soft" type="button" id="btnPickPhotos">Galería / archivos</button>
-                    <button class="btn btn-soft" type="button" id="btnOpenCamera">Usar cámara</button>
+                    <button class="btn btn-soft" type="button" id="btnOpenCamera">Abrir cámara</button>
                   </div>
                   <input id="pPhotos" type="file" accept="image/*" multiple class="hidden">
+                  <input id="pCameraPhoto" type="file" accept="image/*" capture="environment" class="hidden">
                 </div>
               </div>
 
               <div id="photoPasteZone" class="paste-zone" tabindex="0">
                 <div>
                   <strong>Pega aquí con Ctrl + V</strong>
-                  <div class="mini-note">También puedes tocar este cuadro para enfocarlo y luego pegar, o usar galería / cámara.</div>
+                  <div class="mini-note">También puedes tocar este cuadro para enfocarlo y luego pegar, o usar galería / abrir cámara.</div>
                 </div>
               </div>
-              <div class="mini-note">Puedes agregar hasta 5 fotos. Compatible con Ctrl + V, galería/archivos y cámara del móvil o PC.</div>
+              <div class="mini-note">Puedes agregar hasta 5 fotos. Compatible con Ctrl + V, galería/archivos y abrir la app de cámara del móvil.</div>
               <div id="photoPreview" class="thumb-strip"></div>
 
               <label>Notas</label>
@@ -1171,74 +1167,20 @@ async function handlePhotoDrop(event){
   pulsePasteZone();
 }
 function stopCameraStream(){
-  if(state.cameraStream){
-    state.cameraStream.getTracks().forEach(track => track.stop());
-    state.cameraStream = null;
-  }
+  state.cameraStream = null;
 }
 async function openCameraModal(){
   if(photoLimitReached()){
     alert("Ya llegaste al máximo de 5 fotos.");
     return;
   }
-  if(!navigator.mediaDevices?.getUserMedia){
-    alert("Este navegador no permite usar cámara desde aquí.");
-    return;
-  }
-  $("cameraModal").classList.add("open");
-  await startCameraStream();
+  $("pCameraPhoto").click();
 }
 async function startCameraStream(){
-  stopCameraStream();
-  const video = $("cameraVideo");
-  try{
-    let stream;
-    try{
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
-    }catch{
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    }
-    state.cameraStream = stream;
-    video.srcObject = stream;
-    await video.play();
-  }catch(err){
-    closeCameraModal();
-    alert("No se pudo abrir la cámara. Revisa permisos del navegador.");
-  }
+  openCameraModal();
 }
-function captureCameraPhoto(){
-  const video = $("cameraVideo");
-  if(!video.videoWidth || !video.videoHeight){
-    alert("La cámara todavía no está lista.");
-    return;
-  }
-  if(photoLimitReached()){
-    alert("Ya llegaste al máximo de 5 fotos.");
-    return;
-  }
-  const maxSize = 1200;
-  let width = video.videoWidth;
-  let height = video.videoHeight;
-  if(width > height && width > maxSize){
-    height = Math.round((height * maxSize) / width);
-    width = maxSize;
-  }else if(height >= width && height > maxSize){
-    width = Math.round((width * maxSize) / height);
-    height = maxSize;
-  }
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, width, height);
-  state.formPhotos.push(canvas.toDataURL("image/jpeg", 0.82));
-  renderPhotoPreview();
-  closeCameraModal();
-}
-function closeCameraModal(){
-  stopCameraStream();
-  $("cameraModal").classList.remove("open");
-}
+function captureCameraPhoto(){}
+function closeCameraModal(){}
 async function handlePhotoFiles(files){
   const selected = Array.from(files || []);
   if(!selected.length) return;
@@ -1757,7 +1699,6 @@ function jumpPhoto(index){
   renderPhotoViewer();
 }
 document.addEventListener("keydown", (e)=>{
-  if($("cameraModal").classList.contains("open") && e.key === "Escape") closeCameraModal();
   if(!$("photoModal").classList.contains("open")) return;
   if(e.key === "Escape") closePhotoViewer();
   if(e.key === "ArrowLeft") prevPhoto();
@@ -1903,6 +1844,10 @@ function bootEvents(){
     await handlePhotoFiles(e.target.files);
     e.target.value = "";
   });
+  $("pCameraPhoto").addEventListener("change", async (e)=>{
+    await handlePhotoFiles(e.target.files);
+    e.target.value = "";
+  });
   $("photoPasteZone").addEventListener("click", ()=> $("photoPasteZone").focus());
   $("photoPasteZone").addEventListener("paste", handlePhotoPaste);
   $("photoPasteZone").addEventListener("dragenter", (e)=>{ e.preventDefault(); $("photoPasteZone").classList.add("active"); });
@@ -1966,19 +1911,6 @@ function bootEvents(){
   $("photoModal").addEventListener("click", (e)=>{
     if(e.target.id === "photoModal") closePhotoViewer();
   });
-
-  const bindTap = (id, handler) => {
-    const el = $(id);
-    if(!el) return;
-    el.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); handler(); });
-    el.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); handler(); }, {passive:false});
-  };
-  bindTap("btnCloseCamera", closeCameraModal);
-  bindTap("btnRetryCamera", startCameraStream);
-  bindTap("btnCaptureCamera", captureCameraPhoto);
-  $("cameraModal").addEventListener("click", (e)=>{
-    if(e.target.id === "cameraModal") closeCameraModal();
-  });
   window.addEventListener("beforeunload", stopCameraStream);
 }
 window.editProduct = editProduct;
@@ -2005,24 +1937,6 @@ window.jumpPhoto = jumpPhoto;
   else showLogin();
 })();
 </script>
-
-<div id="cameraModal" class="modal">
-  <div class="modal-card">
-    <div class="space-between" style="margin-bottom:12px">
-      <div>
-        <div class="title" style="font-size:1.2rem">Tomar foto</div>
-        <div class="subtitle small">Usa la cámara del móvil o PC para agregar una imagen al producto.</div>
-      </div>
-      <button class="btn btn-soft" id="btnCloseCamera" type="button">Cerrar</button>
-    </div>
-    <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
-    <div class="camera-actions">
-      <button class="btn btn-primary" id="btnCaptureCamera" type="button">Capturar foto</button>
-      <button class="btn btn-soft" id="btnRetryCamera" type="button">Reiniciar cámara</button>
-    </div>
-    <div class="mini-note">En algunos navegadores primero te pedirá permiso para usar la cámara.</div>
-  </div>
-</div>
 
 </body>
 </html>
