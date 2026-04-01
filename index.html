@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventario V2+ · GitHub Pages</title>
+  <style>
+    :root{
+      --bg:#08111f;
+      --bg2:#0c1830;
+      --panel:#101c36;
+      --panel2:#162544;
+      --line:rgba(255,255,255,.08);
+      --text:#edf3ff;
+      --muted:#9eb1d8;
+      --primary:#6cb6ff;
+      --primary2:#77efd1;
+      --danger:#ff6f91;
+      --warn:#ffd06d;
+      --ok:#6ce7a0;
+      --shadow:0 18px 45px rgba(0,0,0,.28);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:
+      radial-gradient(circle at top right, rgba(108,182,255,.14), transparent 22%),
+      radial-gradient(circle at bottom left, rgba(119,239,209,.10), transparent 26%),
+      linear-gradient(180deg, #07101c, #0d1730 58%, #08111f);}
+    body{min-height:100vh;padding:14px}
+    .app{max-width:1580px;margin:0 auto}
+    .hidden{display:none!important}
+    .glass{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(9px)}
+    .card{border-radius:var(--radius);padding:18px}
+    .title{font-size:clamp(1.4rem,2vw,2.2rem);font-weight:900;letter-spacing:.2px}
+    .subtitle,.muted{color:var(--muted)}
+    .tiny{font-size:.78rem}
+    .small{font-size:.9rem}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+    .pill.accent{background:linear-gradient(135deg, rgba(108,182,255,.20), rgba(119,239,209,.15));border-color:rgba(119,239,209,.25)}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border-radius:999px;font-size:.82rem;font-weight:800;border:1px solid transparent}
+    .chip.ok{background:rgba(108,231,160,.11);color:#9dffd0;border-color:rgba(108,231,160,.25)}
+    .chip.warn{background:rgba(255,208,109,.11);color:#ffdc89;border-color:rgba(255,208,109,.25)}
+    .chip.danger{background:rgba(255,111,145,.11);color:#ffabc1;border-color:rgba(255,111,145,.25)}
+    .chip.info{background:rgba(108,182,255,.11);color:#b6d5ff;border-color:rgba(108,182,255,.25)}
+    .btn,button{font:inherit}
+    .btn{
+      border:none;border-radius:16px;padding:12px 15px;font-weight:800;cursor:pointer;transition:.18s transform ease,.18s opacity ease;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#05131f}
+    .btn-soft{background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--line)}
+    .btn-danger{background:linear-gradient(135deg,#ff8fab,#ff648d);color:white}
+    .btn-warn{background:linear-gradient(135deg,#ffd86d,#ffb54f);color:#352100}
+    input,select,textarea{
+      width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:13px 14px;color:var(--text);outline:none
+    }
+    textarea{min-height:92px;resize:vertical}
+    input::placeholder, textarea::placeholder{color:#98a9d3}
+    label{display:block;margin:12px 0 8px;font-size:.92rem}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .grid-6{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+    .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .topbar{display:grid;grid-template-columns:1.4fr .8fr;gap:16px;margin-bottom:16px}
+    .hero{display:flex;justify-content:space-between;gap:16px;align-items:center}
+    .hero-badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .stat{padding:16px;border-radius:20px}
+    .stat .label{font-size:.88rem;color:var(--muted)}
+    .stat .value{font-weight:900;font-size:1.34rem;margin-top:6px;line-height:1.1}
+    .layout{display:grid;grid-template-columns:260px 1fr;gap:16px}
+    .nav{display:grid;gap:10px}
+    .nav button{text-align:left}
+    .nav .active{background:linear-gradient(135deg, rgba(108,182,255,.20), rgba(119,239,209,.15));border:1px solid rgba(119,239,209,.25)}
+    .section{display:none}
+    .section.active{display:block}
+    .toolbar{display:grid;grid-template-columns:1.3fr .8fr .9fr .8fr auto;gap:10px;align-items:center;margin-bottom:14px}
+    .table-wrap{overflow:auto;border-radius:20px;border:1px solid var(--line)}
+    table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.03)}
+    th,td{padding:13px 12px;border-bottom:1px solid rgba(255,255,255,.07);text-align:left;white-space:nowrap;vertical-align:top}
+    th{position:sticky;top:0;background:#162544;color:#d4ddff;font-size:.88rem;z-index:1}
+    tr:hover td{background:rgba(255,255,255,.03)}
+    .empty{padding:28px;text-align:center;color:var(--muted)}
+    .list{display:grid;gap:10px}
+    .item{padding:12px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+    .login-screen{min-height:calc(100vh - 28px);display:grid;place-items:center}
+    .login-card{width:min(920px,100%);padding:24px}
+    .note{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#d6e0ff}
+    .danger-box,.ok-box,.warn-box{padding:12px 14px;border-radius:16px;border:1px solid transparent}
+    .danger-box{background:rgba(255,111,145,.08);border-color:rgba(255,111,145,.22);color:#ffd4df}
+    .ok-box{background:rgba(108,231,160,.08);border-color:rgba(108,231,160,.22);color:#dffff0}
+    .warn-box{background:rgba(255,208,109,.08);border-color:rgba(255,208,109,.22);color:#fff2cb}
+    .flex{display:flex;gap:10px;align-items:center}
+    .space-between{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .sale-layout{display:grid;grid-template-columns:1fr 410px;gap:16px}
+    .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .product-card{padding:14px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.04);display:grid;gap:8px}
+    .product-card h4{margin:0;font-size:1rem}
+    .cart-list{display:grid;gap:10px}
+    .cart-item{padding:12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+    .login-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .footer-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .checkbox-line{display:flex;gap:10px;align-items:center;margin-top:10px}
+    .checkbox-line input{width:auto}
+    .thumb{width:54px;height:54px;border-radius:12px;object-fit:cover;border:1px solid var(--line);background:rgba(255,255,255,.04)}
+    .thumb.big{width:72px;height:72px}
+    .thumb-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .thumb-wrap{position:relative}
+    .thumb-remove{position:absolute;top:-7px;right:-7px;width:24px;height:24px;border-radius:999px;border:none;background:linear-gradient(135deg,#ff8fab,#ff648d);color:#fff;cursor:pointer;font-weight:900}
+    .category-chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+    .category-chip{
+      padding:9px 14px;border-radius:999px;background:#fff;color:#08111f;border:none;cursor:pointer;font-weight:800;
+    }
+    .category-chip.active{background:#0b78ff;color:#fff}
+    .meta-line{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;color:var(--muted);font-size:.8rem}
+    .inventory-photo-cell{display:flex;align-items:center;gap:10px}
+    .inventory-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .modal{
+      position:fixed;inset:0;background:rgba(4,10,18,.84);display:none;align-items:center;justify-content:center;z-index:2000;padding:18px
+    }
+    .modal.open{display:flex}
+    .modal-card{
+      width:min(980px,100%);max-height:92vh;overflow:auto;border-radius:28px;padding:18px;background:linear-gradient(180deg, rgba(16,28,54,.98), rgba(22,37,68,.98));border:1px solid var(--line);box-shadow:var(--shadow)
+    }
+    .viewer-image{
+      width:100%;max-height:72vh;object-fit:contain;border-radius:20px;background:#09111d;border:1px solid var(--line)
+    }
+        .mini-note{font-size:.82rem;color:var(--muted);margin-top:8px}
+    .paste-zone{
+      margin-top:12px;min-height:92px;border-radius:18px;border:1.5px dashed rgba(119,239,209,.28);
+      display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;cursor:pointer;
+      background:rgba(255,255,255,.03)
+    }
+    .paste-zone.active{border-color:rgba(108,182,255,.65);background:rgba(108,182,255,.08)}
+    .camera-video{
+      width:100%;max-height:62vh;object-fit:cover;border-radius:20px;background:#09111d;border:1px solid var(--line)
+    }
+    .camera-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+    @media (max-width:1280px){
+      .layout,.topbar,.sale-layout,.login-grid,.grid-6,.toolbar,.product-grid{grid-template-columns:1fr}
+    }
+    @media (max-width:760px){
+      body{padding:10px}
+      .card{padding:14px}
+      .grid-2,.grid-3,.btn-row{grid-template-columns:1fr}
+      th,td{font-size:.88rem}
+      .hero{flex-direction:column;align-items:flex-start}
+      .category-chips{overflow:auto;flex-wrap:nowrap;padding-bottom:6px}
+      .category-chip{white-space:nowrap}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <section id="loginScreen" class="login-screen">
+    <div class="glass card login-card">
+      <div class="space-between" style="align-items:flex-start">
+        <div>
+          <div class="pill accent">V2+ · GitHub Pages + sincronización manual</div>
+          <div class="title" style="margin-top:10px">Inventario THE BOSS HN</div>
+          <div class="subtitle" style="margin-top:6px">Ahora con fotos, categorías predefinidas, lista de pendientes de compra, total invertido y fechas de creación/edición.</div>
+        </div>
+        <div class="pill">Listo para subir</div>
+      </div>
+
+      <div class="login-grid" style="margin-top:18px">
+        <div class="glass card">
+          <h2 style="margin:0 0 8px">Acceso al sistema</h2>
+          <div class="subtitle small">Para esta versión local, la key se valida en el navegador y la sesión queda ligada al dispositivo actual.</div>
+
+          <label>Nombre del trabajador</label>
+          <input id="loginName" placeholder="Ej: Brayan / Bodega principal">
+
+          <label>Licencia / key</label>
+          <input id="loginKey" placeholder="Escribe tu key aquí">
+
+          <div class="btn-row" style="margin-top:16px">
+            <button class="btn btn-primary" id="btnEnter">Entrar al sistema</button>
+            <button class="btn btn-soft" id="btnDemo">Modo demo</button>
+          </div>
+
+          <div class="mini-note" style="margin-top:14px"><strong>Para conectarlo:</strong> abre el archivo y rellena <code>KEYAUTH_CONFIG</code> con tu <em>Application Name</em>, <em>Owner ID</em> y versión.</div>
+          <div id="loginStatus" class="note small" style="margin-top:10px">
+            En esta versión, la parte de licencia funciona localmente para el uso normal. La sincronización a GitHub se hace solo desde el panel admin con token manual.
+          </div>
+        </div>
+
+        <div class="glass card">
+          <h2 style="margin:0 0 8px">Dispositivo actual</h2>
+          <div class="subtitle small">Se genera un identificador web del dispositivo/navegador para amarrar la sesión local.</div>
+          <label>Device ID</label>
+          <textarea id="deviceView" readonly></textarea>
+          <div class="warn-box tiny" style="margin-top:10px">
+            El token de GitHub no va guardado en el HTML. Solo se escribe manualmente en el panel de sincronización cuando tú quieras subir o bajar datos.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="appScreen" class="hidden">
+    <div class="topbar">
+      <div class="glass card hero">
+        <div>
+          <div class="title">Inventario THE BOSS HN</div>
+          <div class="subtitle">Sistema bonito, rápido y fácil para trabajadores</div>
+          <div class="hero-badges">
+            <span class="pill accent" id="whoBadge">Usuario: -</span>
+            <span class="pill" id="deviceBadge">Device: -</span>
+            <span class="pill" id="syncBadge">Sincronización: local</span>
+          </div>
+        </div>
+        <div class="footer-actions">
+          <button class="btn btn-soft" id="btnExport">Exportar JSON</button>
+          <button class="btn btn-soft" id="btnImport">Importar JSON</button>
+          <button class="btn btn-danger" id="btnLogout">Salir</button>
+          <input type="file" id="importFile" accept=".json" class="hidden">
+        </div>
+      </div>
+
+      <div class="grid-6">
+        <div class="glass stat">
+          <div class="label">Productos únicos</div>
+          <div class="value" id="statProducts">0</div>
+        </div>
+        <div class="glass stat">
+          <div class="label">Unidades en inventario</div>
+          <div class="value" id="statUnits">0</div>
+        </div>
+        <div class="glass stat">
+          <div class="label">Bajo stock</div>
+          <div class="value" id="statLow">0</div>
+        </div>
+        <div class="glass stat">
+          <div class="label">Pendientes de comprar</div>
+          <div class="value" id="statPending">0</div>
+        </div>
+        <div class="glass stat">
+          <div class="label">Total invertido</div>
+          <div class="value" id="statInvestment">L 0.00</div>
+        </div>
+        <div class="glass stat">
+          <div class="label">Ventas hoy</div>
+          <div class="value" id="statSales">L 0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="glass card">
+        <div class="nav">
+          <button class="btn btn-soft active" data-section="dashboard">Dashboard</button>
+          <button class="btn btn-soft" data-section="inventory">Inventario</button>
+          <button class="btn btn-soft" data-section="sales">Ventas</button>
+          <button class="btn btn-soft" data-section="history">Historial</button>
+          <button class="btn btn-soft" data-section="sync">Sincronización</button>
+        </div>
+        <div class="note tiny" style="margin-top:14px">
+          Recomendado: antes de subir cambios a GitHub, primero usa <strong>Cargar desde GitHub</strong> para traer lo último del repo.
+        </div>
+      </aside>
+
+      <main>
+        <section id="section-dashboard" class="section active">
+          <div class="grid-2">
+            <div class="glass card">
+              <div class="space-between">
+                <h2 style="margin:0">Productos pendientes de comprar</h2>
+                <span class="chip warn" id="pendingBadge">0 pendientes</span>
+              </div>
+              <div id="dashboardPending" class="list" style="margin-top:12px"></div>
+            </div>
+
+            <div class="glass card">
+              <div class="space-between">
+                <h2 style="margin:0">Últimos movimientos</h2>
+                <span class="chip ok" id="movementBadge">0 registros</span>
+              </div>
+              <div id="dashboardMovements" class="list" style="margin-top:12px"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-inventory" class="section">
+          <div class="grid-2">
+            <div class="glass card">
+              <div class="space-between">
+                <h2 style="margin:0">Agregar / editar producto</h2>
+                <span class="chip info" id="editBadge">Nuevo</span>
+              </div>
+
+              <label>Código</label>
+              <input id="pSku" placeholder="Ej: GOR-001">
+
+              <label>Nombre</label>
+              <input id="pName" placeholder="Ej: Gorro negro premium">
+
+              <div class="grid-2">
+                <div>
+                  <label>Categoría</label>
+                  <select id="pCategory"></select>
+                </div>
+                <div>
+                  <label>Nueva categoría (opcional)</label>
+                  <input id="pNewCategory" placeholder="Ej: Audio premium">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div>
+                  <label>Ubicación</label>
+                  <input id="pLocation" placeholder="Ej: Estante A1">
+                </div>
+                <div>
+                  <label>Condición</label>
+                  <select id="pCondition">
+                    <option value="NUEVO">NUEVO</option>
+                    <option value="USADO COMO NUEVO">USADO COMO NUEVO</option>
+                    <option value="USADO">USADO</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid-3">
+                <div>
+                  <label>Stock</label>
+                  <input id="pStock" type="number" min="0" value="0">
+                </div>
+                <div>
+                  <label>Mínimo</label>
+                  <input id="pMin" type="number" min="0" value="1">
+                </div>
+                <div>
+                  <label>Costo (L)</label>
+                  <input id="pCost" type="number" min="0" step="0.01" value="0">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div>
+                  <label>Precio de venta (L)</label>
+                  <input id="pPrice" type="number" min="0" step="0.01" value="0">
+                </div>
+                <div>
+                  <label>Fotos del producto</label>
+                  <div class="footer-actions">
+                    <button class="btn btn-soft" type="button" id="btnPickPhotos">Galería / archivos</button>
+                    <button class="btn btn-soft" type="button" id="btnOpenCamera">Usar cámara</button>
+                  </div>
+                  <input id="pPhotos" type="file" accept="image/*" multiple class="hidden">
+                </div>
+              </div>
+
+              <div id="photoPasteZone" class="paste-zone" tabindex="0">
+                <div>
+                  <strong>Pega aquí con Ctrl + V</strong>
+                  <div class="mini-note">También puedes tocar este cuadro para enfocarlo y luego pegar, o usar galería / cámara.</div>
+                </div>
+              </div>
+              <div class="mini-note">Puedes agregar hasta 5 fotos. Compatible con Ctrl + V, galería/archivos y cámara del móvil o PC.</div>
+              <div id="photoPreview" class="thumb-strip"></div>
+
+              <label>Notas</label>
+              <textarea id="pNotes" placeholder="Notas rápidas para trabajadores"></textarea>
+
+              <div id="productMeta" class="note tiny hidden" style="margin-top:12px"></div>
+
+              <div class="btn-row" style="margin-top:16px">
+                <button class="btn btn-primary" id="btnSaveProduct">Guardar producto</button>
+                <button class="btn btn-soft" id="btnClearProduct">Limpiar</button>
+              </div>
+
+              <div class="footer-actions" style="margin-top:12px">
+                <button class="btn btn-warn" id="btnSeed">Cargar ejemplo</button>
+                <button class="btn btn-danger" id="btnResetAll">Vaciar datos</button>
+              </div>
+            </div>
+
+            <div class="glass card">
+              <div class="toolbar">
+                <input id="searchInventory" placeholder="Buscar por código, nombre, categoría o ubicación">
+                <select id="filterCategory">
+                  <option value="">Todas las categorías</option>
+                </select>
+                <select id="sortInventory">
+                  <option value="updated_desc">Última edición primero</option>
+                  <option value="created_desc">Fecha agregado primero</option>
+                  <option value="name_asc">Alfabético A-Z</option>
+                  <option value="stock_desc">Mayor existencia</option>
+                  <option value="stock_asc">Menor existencia</option>
+                </select>
+                <select id="filterCondition">
+                  <option value="">Todas las condiciones</option>
+                  <option value="NUEVO">NUEVO</option>
+                  <option value="USADO COMO NUEVO">USADO COMO NUEVO</option>
+                  <option value="USADO">USADO</option>
+                </select>
+                <button class="btn btn-soft" id="btnClearFilters">Limpiar</button>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                  <tr>
+                    <th>Foto</th>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Stock</th>
+                    <th>Mínimo</th>
+                    <th>Costo</th>
+                    <th>Precio</th>
+                    <th>Condición</th>
+                    <th>Estado stock</th>
+                    <th>Creado</th>
+                    <th>Editado</th>
+                    <th>Acciones</th>
+                  </tr>
+                  </thead>
+                  <tbody id="inventoryTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-sales" class="section">
+          <div class="sale-layout">
+            <div class="glass card">
+              <div class="space-between">
+                <h2 style="margin:0">Ventas</h2>
+                <span class="chip ok">Vender resta stock</span>
+              </div>
+
+              <div class="toolbar" style="grid-template-columns:1fr .9fr .8fr auto">
+                <input id="searchSales" placeholder="Buscar producto para vender">
+                <select id="salesCategory">
+                  <option value="">Todas las categorías</option>
+                </select>
+                <select id="salesAvailability">
+                  <option value="">Todos</option>
+                  <option value="available">Con stock</option>
+                  <option value="low">Bajo stock</option>
+                </select>
+                <button class="btn btn-soft" id="btnRefreshSales">Actualizar</button>
+              </div>
+
+              <div id="salesProducts" class="product-grid"></div>
+            </div>
+
+            <div class="glass card">
+              <div class="space-between">
+                <h2 style="margin:0">Carrito</h2>
+                <span class="chip warn" id="cartCount">0 items</span>
+              </div>
+
+              <label>Cliente</label>
+              <input id="saleClient" placeholder="Opcional">
+
+              <label>Método de pago</label>
+              <select id="salePayment">
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Tigo Money">Tigo Money</option>
+                <option value="Tarjeta">Tarjeta</option>
+              </select>
+
+              <label>Descuento (L)</label>
+              <input id="saleDiscount" type="number" min="0" step="0.01" value="0">
+
+              <div id="cartList" class="cart-list" style="margin-top:12px"></div>
+
+              <div class="note" style="margin-top:12px">
+                <div class="space-between"><span>Subtotal</span><strong id="cartSubtotal">L 0.00</strong></div>
+                <div class="space-between" style="margin-top:6px"><span>Descuento</span><strong id="cartDiscountView">L 0.00</strong></div>
+                <div class="space-between" style="margin-top:6px;font-size:1.05rem"><span>Total</span><strong id="cartTotal">L 0.00</strong></div>
+              </div>
+
+              <div class="btn-row" style="margin-top:14px">
+                <button class="btn btn-primary" id="btnConfirmSale">Confirmar venta</button>
+                <button class="btn btn-soft" id="btnClearCart">Vaciar carrito</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-history" class="section">
+          <div class="glass card">
+            <div class="toolbar">
+              <input id="historySearch" placeholder="Buscar en historial">
+              <select id="historyType">
+                <option value="">Todos los tipos</option>
+                <option value="sale_out">Venta</option>
+                <option value="entry">Entrada</option>
+                <option value="adjustment">Ajuste</option>
+                <option value="manual_out">Salida manual</option>
+              </select>
+              <select id="historyToday">
+                <option value="">Todo</option>
+                <option value="today">Solo hoy</option>
+              </select>
+              <button class="btn btn-soft" id="btnRefreshHistory">Actualizar</button>
+              <button class="btn btn-soft" id="btnExportHistory">Exportar historial</button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Referencia</th>
+                    <th>Usuario</th>
+                    <th>Stock antes/después</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-sync" class="section">
+          <div class="grid-2">
+            <div class="glass card">
+              <div class="space-between">
+                <h2 style="margin:0">Panel admin de sincronización</h2>
+                <span class="chip danger">Solo tú</span>
+              </div>
+
+              <label>GitHub token (manual)</label>
+              <input id="ghToken" type="password" placeholder="Pégalo solo cuando vayas a sincronizar">
+
+              <div class="checkbox-line">
+                <input type="checkbox" id="rememberToken">
+                <label for="rememberToken" style="margin:0">Recordar token en este navegador</label>
+              </div>
+
+              <div class="grid-2">
+                <div>
+                  <label>Owner</label>
+                  <input id="ghOwner" placeholder="Ej: CatalogosHN">
+                </div>
+                <div>
+                  <label>Repo</label>
+                  <input id="ghRepo" placeholder="Ej: SeguimientoTrackings">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div>
+                  <label>Branch</label>
+                  <input id="ghBranch" placeholder="main" value="main">
+                </div>
+                <div>
+                  <label>Ruta del archivo JSON</label>
+                  <input id="ghPath" placeholder="data/store.json" value="data/store.json">
+                </div>
+              </div>
+
+              <div class="btn-row" style="margin-top:16px">
+                <button class="btn btn-soft" id="btnPull">Cargar desde GitHub</button>
+                <button class="btn btn-primary" id="btnPush">Subir a GitHub</button>
+              </div>
+
+              <div class="footer-actions" style="margin-top:12px">
+                <button class="btn btn-soft" id="btnSaveConfig">Guardar configuración</button>
+                <button class="btn btn-soft" id="btnClearToken">Borrar token guardado</button>
+              </div>
+
+              <div id="syncStatus" class="note small" style="margin-top:14px">
+                Recomendado: primero cargar desde GitHub, revisar datos y luego subir.
+              </div>
+            </div>
+
+            <div class="glass card">
+              <h2 style="margin:0 0 8px">Qué hace la sincronización</h2>
+              <div class="list">
+                <div class="item">
+                  <strong>1. Trabajadores usan el sistema normal</strong>
+                  <div class="small muted">Ventas, inventario e historial se guardan localmente en el navegador.</div>
+                </div>
+                <div class="item">
+                  <strong>2. Tú pegas el token manualmente</strong>
+                  <div class="small muted">El token no va metido en el HTML. Solo aparece cuando tú lo escribes aquí.</div>
+                </div>
+                <div class="item">
+                  <strong>3. El sistema lee o actualiza <code>data/store.json</code></strong>
+                  <div class="small muted">Las fotos también viajan en el JSON, por eso conviene no subir imágenes gigantes.</div>
+                </div>
+                <div class="item">
+                  <strong>4. Después puedes recargar en otros dispositivos</strong>
+                  <div class="small muted">Usa “Cargar desde GitHub” en el otro equipo para traer la información publicada.</div>
+                </div>
+              </div>
+
+              <div class="warn-box small" style="margin-top:14px">
+                Si haces cambios en dos equipos diferentes al mismo tiempo y ambos suben sin traer lo último primero, podrías sobreescribir datos. Usa siempre el orden: <strong>cargar → revisar → subir</strong>.
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </section>
+</div>
+
+<div id="photoModal" class="modal">
+  <div class="modal-card">
+    <div class="space-between" style="margin-bottom:12px">
+      <div>
+        <div id="photoModalTitle" class="title" style="font-size:1.2rem">Fotos del producto</div>
+        <div id="photoModalCounter" class="subtitle small">1 / 1</div>
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn-soft" id="btnPrevPhoto">Anterior</button>
+        <button class="btn btn-soft" id="btnNextPhoto">Siguiente</button>
+        <button class="btn btn-danger" id="btnClosePhoto">Cerrar</button>
+      </div>
+    </div>
+    <img id="photoModalImage" class="viewer-image" alt="Foto del producto">
+    <div id="photoModalThumbs" class="thumb-strip"></div>
+  </div>
+</div>
+
+<script>
+const STORE_KEY = "boss_inventory_v2plus_store";
+const SESSION_KEY = "boss_inventory_v2plus_session";
+const CONFIG_KEY = "boss_inventory_v2plus_synccfg";
+
+// ==================================================
+// KEYAUTH FRONTEND CONFIG
+// RELLENA SOLO ESTOS DATOS VISIBLES DE TU APP:
+// - appName
+// - ownerId
+// - version
+//
+// NO PONGAS AQUI:
+// - seller key
+// - application secret
+// - credenciales administrativas
+// ==================================================
+const KEYAUTH_CONFIG = {
+  enabled: true,
+  apiUrl: "https://keyauth.win/api/1.3/",
+  appName: "InvItems",
+  ownerId: "RZsbvRZczd",
+  version: "1.0",
+  hash: "",
+  token: "",
+  thash: "",
+  code: ""
+};
+
+const DEFAULT_CATEGORIES = [
+  "Tecnología y Juegos",
+  "Joyeria",
+  "Celulares y Tablets",
+  "Ropa y Calzado",
+  "Auto y Moto",
+  "Gimnasia y Deporte",
+  "Juguetes",
+  "Bolsos y Carteras",
+  "Seguridad Hogar",
+  "Herramientas",
+  "Accesorios Varios",
+  "Damas",
+  "Caballeros",
+  "Otros"
+];
+
+const state = {
+  products: [],
+  sales: [],
+  movements: [],
+  cart: [],
+  user: null,
+  deviceId: "",
+  editingId: null,
+  dirty: false,
+  formPhotos: [],
+  cameraStream: null,
+  keyauthSessionId: "",
+  photoViewer: {
+    title: "",
+    photos: [],
+    index: 0
+  }
+};
+
+const $ = id => document.getElementById(id);
+
+function money(v){
+  return `L ${Number(v || 0).toLocaleString("es-HN",{minimumFractionDigits:2, maximumFractionDigits:2})}`;
+}
+function uid(){
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+async function sha256(text){
+  const enc = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest("SHA-256", enc);
+  return [...new Uint8Array(hash)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+async function getDeviceId(){
+  const raw = [
+    navigator.userAgent || "",
+    navigator.language || "",
+    screen.width || 0,
+    screen.height || 0,
+    Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+    navigator.platform || "",
+    navigator.hardwareConcurrency || 0
+  ].join("|");
+  const h = await sha256(raw);
+  return "WEB-" + h.slice(0,32).toUpperCase();
+}
+function nowISO(){
+  return new Date().toISOString();
+}
+function formatDate(value){
+  if(!value) return "-";
+  return new Date(value).toLocaleString("es-HN");
+}
+function normalizeProduct(p){
+  return {
+    id: p.id || uid(),
+    sku: p.sku || "",
+    name: p.name || "",
+    category: p.category || "",
+    location: p.location || "",
+    stock: Number(p.stock || 0),
+    minStock: Number(p.minStock || p.min || 0),
+    cost: Number(p.cost || 0),
+    price: Number(p.price || 0),
+    condition: p.condition || (["NUEVO","USADO COMO NUEVO","USADO"].includes(p.status) ? p.status : "NUEVO"),
+    notes: p.notes || "",
+    photos: Array.isArray(p.photos) ? p.photos : (p.image ? [p.image] : []),
+    createdAt: p.createdAt || p.updatedAt || nowISO(),
+    updatedAt: p.updatedAt || p.createdAt || nowISO()
+  };
+}
+function saveStore(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(getStorePayload()));
+  state.dirty = true;
+  renderSyncBadge();
+}
+function loadStore(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+    state.products = Array.isArray(raw.products) ? raw.products.map(normalizeProduct) : [];
+    state.sales = Array.isArray(raw.sales) ? raw.sales : [];
+    state.movements = Array.isArray(raw.movements) ? raw.movements : [];
+  }catch{
+    state.products = [];
+    state.sales = [];
+    state.movements = [];
+  }
+}
+function saveSession(){
+  localStorage.setItem(SESSION_KEY, JSON.stringify(state.user || {}));
+}
+function loadSession(){
+  try{
+    state.user = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+  }catch{
+    state.user = null;
+  }
+}
+function clearSession(){
+  localStorage.removeItem(SESSION_KEY);
+  state.user = null;
+}
+function saveConfig(){
+  const cfg = {
+    owner: $("ghOwner").value.trim(),
+    repo: $("ghRepo").value.trim(),
+    branch: $("ghBranch").value.trim() || "main",
+    path: $("ghPath").value.trim() || "data/store.json"
+  };
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+  if ($("rememberToken").checked && $("ghToken").value.trim()){
+    sessionStorage.setItem(CONFIG_KEY + "_token", $("ghToken").value.trim());
+  }
+  $("syncStatus").innerHTML = `<div class="ok-box">Configuración guardada.</div>`;
+}
+function loadConfig(){
+  try{
+    const cfg = JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
+    $("ghOwner").value = cfg.owner || "";
+    $("ghRepo").value = cfg.repo || "";
+    $("ghBranch").value = cfg.branch || "main";
+    $("ghPath").value = cfg.path || "data/store.json";
+  }catch{}
+  const token = sessionStorage.getItem(CONFIG_KEY + "_token");
+  if(token){
+    $("ghToken").value = token;
+    $("rememberToken").checked = true;
+  }
+}
+function clearSavedToken(){
+  sessionStorage.removeItem(CONFIG_KEY + "_token");
+  $("ghToken").value = "";
+  $("rememberToken").checked = false;
+  $("syncStatus").innerHTML = `<div class="ok-box">Token eliminado de esta sesión del navegador.</div>`;
+}
+function stockStatus(p){
+  if (Number(p.stock) <= 0) return "Agotado";
+  if (Number(p.stock) <= Number(p.minStock)) return "Pendiente de compra";
+  return "Disponible";
+}
+function statusChip(status){
+  if (status === "Agotado") return `<span class="chip danger">Agotado</span>`;
+  if (status === "Pendiente de compra") return `<span class="chip warn">Pendiente de compra</span>`;
+  return `<span class="chip ok">Disponible</span>`;
+}
+function conditionChip(condition){
+  if(condition === "USADO") return `<span class="chip warn">USADO</span>`;
+  if(condition === "USADO COMO NUEVO") return `<span class="chip info">USADO COMO NUEVO</span>`;
+  return `<span class="chip ok">NUEVO</span>`;
+}
+function todayLocalDate(){
+  return new Date().toISOString().slice(0,10);
+}
+function getAllCategories(){
+  const dynamic = state.products.map(p => p.category).filter(Boolean);
+  return [...new Set([...DEFAULT_CATEGORIES, ...dynamic])].sort((a,b)=>a.localeCompare(b));
+}
+function showLogin(){
+  $("loginScreen").classList.remove("hidden");
+  $("appScreen").classList.add("hidden");
+}
+function showApp(){
+  $("loginScreen").classList.add("hidden");
+  $("appScreen").classList.remove("hidden");
+  $("whoBadge").textContent = `Usuario: ${state.user?.name || "Demo"}`;
+  $("deviceBadge").textContent = `Device: ${state.deviceId.slice(0,14)}...`;
+  renderAll();
+}
+
+function keyAuthIsConfigured(){
+  return (
+    KEYAUTH_CONFIG.enabled &&
+    KEYAUTH_CONFIG.appName &&
+    KEYAUTH_CONFIG.ownerId &&
+    !KEYAUTH_CONFIG.appName.includes("PON_AQUI") &&
+    !KEYAUTH_CONFIG.ownerId.includes("PON_AQUI")
+  );
+}
+async function keyAuthRequest(params){
+  const url = new URL(KEYAUTH_CONFIG.apiUrl);
+  Object.entries(params).forEach(([key, value]) => {
+    if(value !== undefined && value !== null) url.searchParams.set(key, value);
+  });
+
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    cache: "no-store"
+  });
+
+  const text = await res.text();
+  let data;
+  try{
+    data = JSON.parse(text);
+  }catch{
+    throw new Error("KeyAuth respondió algo no válido.");
+  }
+
+  if(!res.ok){
+    throw new Error(data.message || `Error HTTP ${res.status}`);
+  }
+  return data;
+}
+async function keyAuthInit(){
+  if(state.keyauthSessionId) return state.keyauthSessionId;
+
+  const data = await keyAuthRequest({
+    type: "init",
+    ver: KEYAUTH_CONFIG.version || "",
+    name: KEYAUTH_CONFIG.appName || "",
+    ownerid: KEYAUTH_CONFIG.ownerId || "",
+    hash: KEYAUTH_CONFIG.hash || "",
+    token: KEYAUTH_CONFIG.token || "",
+    thash: KEYAUTH_CONFIG.thash || ""
+  });
+
+  if(!data.success || !data.sessionid){
+    throw new Error(data.message || "No se pudo inicializar KeyAuth.");
+  }
+
+  state.keyauthSessionId = data.sessionid;
+  return state.keyauthSessionId;
+}
+async function keyAuthLicenseLogin(licenseKey, hwid){
+  await keyAuthInit();
+
+  const data = await keyAuthRequest({
+    type: "license",
+    key: licenseKey,
+    sessionid: state.keyauthSessionId,
+    name: KEYAUTH_CONFIG.appName || "",
+    ownerid: KEYAUTH_CONFIG.ownerId || "",
+    hwid,
+    code: KEYAUTH_CONFIG.code || ""
+  });
+
+  if(!data.success){
+    throw new Error(data.message || "Licencia inválida.");
+  }
+  return data;
+}
+function validateLogin(name,key){
+  if(!name.trim()) return "Escribe el nombre del trabajador.";
+  if(!key.trim()) return "Escribe una key.";
+  return "";
+}
+async function doLogin(mode="normal"){
+  const name = $("loginName").value.trim() || "Demo";
+  const key = $("loginKey").value.trim() || "DEMO";
+
+  if(mode !== "demo"){
+    const err = validateLogin(name,key);
+    if(err){
+      $("loginStatus").innerHTML = `<div class="danger-box">${escapeHtml(err)}</div>`;
+      return;
+    }
+  }
+
+  try{
+    $("loginStatus").innerHTML = `<div class="warn-box">${mode === "demo" ? "Entrando en modo demo..." : (keyAuthIsConfigured() ? "Validando licencia con KeyAuth..." : "KeyAuth no configurado. Usando validación local...")}</div>`;
+
+    let keyauthData = null;
+
+    if(mode !== "demo" && keyAuthIsConfigured()){
+      keyauthData = await keyAuthLicenseLogin(key, state.deviceId);
+    }
+
+    if(mode !== "demo" && !keyAuthIsConfigured()){
+      const bindKey = "bind_" + await sha256(key);
+      const saved = JSON.parse(localStorage.getItem(bindKey) || "null");
+      if(saved && saved.deviceId !== state.deviceId){
+        $("loginStatus").innerHTML = `<div class="danger-box">Esta key ya quedó ligada a otro dispositivo en este navegador local.</div>`;
+        return;
+      }
+      if(!saved){
+        localStorage.setItem(bindKey, JSON.stringify({deviceId: state.deviceId, createdAt: nowISO()}));
+      }
+    }
+
+    const sub = Array.isArray(keyauthData?.info?.subscriptions) ? keyauthData.info.subscriptions[0] : null;
+
+    state.user = {
+      id: uid(),
+      name: keyauthData?.info?.username || name,
+      keyMasked: mode === "demo" ? "DEMO" : (key.slice(0,4) + "****"),
+      deviceId: state.deviceId,
+      mode,
+      authProvider: keyauthData ? "keyauth" : "local",
+      keyauthUsername: keyauthData?.info?.username || "",
+      keyauthHwid: keyauthData?.info?.hwid || state.deviceId,
+      subscription: sub?.subscription || "",
+      subscriptionLevel: sub?.level || "",
+      expiresUnix: sub?.expiry || ""
+    };
+
+    saveSession();
+    showApp();
+
+    if(keyauthData){
+      $("loginStatus").innerHTML = `<div class="ok-box">Licencia validada correctamente con KeyAuth.</div>`;
+    }else if(mode === "demo"){
+      $("loginStatus").innerHTML = `<div class="ok-box">Entraste en modo demo.</div>`;
+    }else{
+      $("loginStatus").innerHTML = `<div class="ok-box">Entraste usando validación local porque KEYAUTH_CONFIG aún no está rellenado.</div>`;
+    }
+  }catch(err){
+    state.keyauthSessionId = "";
+    $("loginStatus").innerHTML = `<div class="danger-box">${escapeHtml(err.message || "No se pudo validar la licencia.")}</div>`;
+  }
+}
+function logout(){
+  if(!confirm("¿Salir del sistema?")) return;
+  clearSession();
+  showLogin();
+}
+function renderSyncBadge(){
+  $("syncBadge").textContent = state.dirty ? "Sincronización: cambios pendientes" : "Sincronización: al día/local";
+}
+function renderStats(){
+  $("statProducts").textContent = state.products.length;
+  $("statUnits").textContent = state.products.reduce((a,b)=>a+Number(b.stock||0),0);
+  const pending = getPendingProducts();
+  $("statLow").textContent = pending.length;
+  $("statPending").textContent = pending.length;
+  const investment = state.products.reduce((a,b)=>a + (Number(b.stock||0) * Number(b.cost||0)),0);
+  $("statInvestment").textContent = money(investment);
+  const today = todayLocalDate();
+  const salesToday = state.sales.filter(s => (s.createdAt || "").slice(0,10) === today).reduce((a,b)=>a+Number(b.total||0),0);
+  $("statSales").textContent = money(salesToday);
+}
+function getPendingProducts(){
+  return state.products
+    .filter(p => Number(p.stock) <= Number(p.minStock))
+    .sort((a,b) => Number(a.stock) - Number(b.stock) || a.name.localeCompare(b.name));
+}
+function renderDashboard(){
+  const pending = getPendingProducts();
+  $("pendingBadge").textContent = `${pending.length} pendientes`;
+  $("dashboardPending").innerHTML = pending.length ? pending.map(p => {
+    const shortage = Math.max(0, Number(p.minStock) - Number(p.stock));
+    return `
+      <div class="item">
+        <div class="space-between">
+          <div class="inventory-photo-cell">
+            ${p.photos?.[0] ? `<img class="thumb" src="${p.photos[0]}" alt="Foto">` : `<div class="thumb"></div>`}
+            <div>
+              <strong>${escapeHtml(p.name)}</strong>
+              <div class="tiny muted">${escapeHtml(p.sku)} · ${escapeHtml(p.category || "-")}</div>
+            </div>
+          </div>
+          ${statusChip(stockStatus(p))}
+        </div>
+        <div class="meta-line">
+          <span>Stock actual: <strong>${Number(p.stock)}</strong></span>
+          <span>Mínimo: <strong>${Number(p.minStock)}</strong></span>
+          <span>Faltante estimado: <strong>${shortage}</strong></span>
+        </div>
+      </div>
+    `;
+  }).join("") : `<div class="empty">No hay productos pendientes de comprar</div>`;
+
+  $("movementBadge").textContent = `${state.movements.length} registros`;
+  const lastMoves = state.movements.slice(0,8);
+  $("dashboardMovements").innerHTML = lastMoves.length ? lastMoves.map(m => `
+    <div class="item">
+      <div class="space-between">
+        <strong>${escapeHtml(m.productName || "-")}</strong>
+        <span class="chip ${m.type === "sale_out" ? "danger" : m.type === "entry" ? "ok" : "warn"}">${escapeHtml(m.type)} · ${Number(m.qty)}</span>
+      </div>
+      <div class="small muted" style="margin-top:6px">${formatDate(m.createdAt)}</div>
+      <div class="small">${escapeHtml(m.reference || "Sin referencia")} · ${escapeHtml(m.workerName || "-")}</div>
+    </div>
+  `).join("") : `<div class="empty">Aún no hay movimientos</div>`;
+}
+function populateCategorySelects(){
+  const categories = getAllCategories();
+  const currentForm = $("pCategory").value;
+  const currentInventory = $("filterCategory").value;
+  const currentSales = $("salesCategory").value;
+  const opts = `<option value="">Selecciona categoría</option>` + categories.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  $("pCategory").innerHTML = opts;
+  $("filterCategory").innerHTML = `<option value="">Todas las categorías</option>` + categories.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  $("salesCategory").innerHTML = `<option value="">Todas las categorías</option>` + categories.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  if(categories.includes(currentForm)) $("pCategory").value = currentForm;
+  if(categories.includes(currentInventory)) $("filterCategory").value = currentInventory;
+  if(categories.includes(currentSales)) $("salesCategory").value = currentSales;
+}
+
+function setFormMeta(product){
+  if(!product){
+    $("productMeta").classList.add("hidden");
+    $("productMeta").innerHTML = "";
+    return;
+  }
+  $("productMeta").classList.remove("hidden");
+  $("productMeta").innerHTML = `
+    <div>Creado: <strong>${formatDate(product.createdAt)}</strong></div>
+    <div style="margin-top:6px">Última edición: <strong>${formatDate(product.updatedAt)}</strong></div>
+  `;
+}
+function resetProductForm(){
+  state.editingId = null;
+  state.formPhotos = [];
+  $("editBadge").textContent = "Nuevo";
+  $("pSku").value = "";
+  $("pName").value = "";
+  $("pCategory").value = "";
+  $("pNewCategory").value = "";
+  $("pLocation").value = "";
+  $("pStock").value = 0;
+  $("pMin").value = 1;
+  $("pCost").value = 0;
+  $("pPrice").value = 0;
+  $("pCondition").value = "NUEVO";
+  $("pNotes").value = "";
+  $("pPhotos").value = "";
+  $("photoPasteZone").classList.remove("active");
+  renderPhotoPreview();
+  setFormMeta(null);
+}
+function renderPhotoPreview(){
+  $("photoPreview").innerHTML = state.formPhotos.length ? state.formPhotos.map((src, idx) => `
+    <div class="thumb-wrap">
+      <img class="thumb big" src="${src}" alt="Foto ${idx+1}">
+      <button class="thumb-remove" onclick="removeFormPhoto(${idx})">×</button>
+    </div>
+  `).join("") : `<div class="mini-note">Aún no has agregado fotos.</div>`;
+}
+function removeFormPhoto(index){
+  state.formPhotos.splice(index, 1);
+  renderPhotoPreview();
+}
+async function resizeImageFile(file, maxSize = 1200, quality = 0.82){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let {width, height} = img;
+        if(width > height && width > maxSize){
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        }else if(height >= width && height > maxSize){
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function photoLimitReached(){
+  return state.formPhotos.length >= 5;
+}
+function pulsePasteZone(){
+  const zone = $("photoPasteZone");
+  zone.classList.add("active");
+  setTimeout(() => zone.classList.remove("active"), 700);
+}
+async function handlePhotoPaste(event){
+  const items = Array.from(event.clipboardData?.items || []);
+  const files = items.filter(item => item.type && item.type.startsWith("image/"))
+                     .map(item => item.getAsFile())
+                     .filter(Boolean);
+  if(!files.length) return;
+  event.preventDefault();
+  await handlePhotoFiles(files);
+  pulsePasteZone();
+}
+async function handlePhotoDrop(event){
+  event.preventDefault();
+  $("photoPasteZone").classList.remove("active");
+  const files = Array.from(event.dataTransfer?.files || []).filter(file => file.type.startsWith("image/"));
+  if(!files.length) return;
+  await handlePhotoFiles(files);
+  pulsePasteZone();
+}
+function stopCameraStream(){
+  if(state.cameraStream){
+    state.cameraStream.getTracks().forEach(track => track.stop());
+    state.cameraStream = null;
+  }
+}
+async function openCameraModal(){
+  if(photoLimitReached()){
+    alert("Ya llegaste al máximo de 5 fotos.");
+    return;
+  }
+  if(!navigator.mediaDevices?.getUserMedia){
+    alert("Este navegador no permite usar cámara desde aquí.");
+    return;
+  }
+  $("cameraModal").classList.add("open");
+  await startCameraStream();
+}
+async function startCameraStream(){
+  stopCameraStream();
+  const video = $("cameraVideo");
+  try{
+    let stream;
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+    }catch{
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+    state.cameraStream = stream;
+    video.srcObject = stream;
+    await video.play();
+  }catch(err){
+    closeCameraModal();
+    alert("No se pudo abrir la cámara. Revisa permisos del navegador.");
+  }
+}
+function captureCameraPhoto(){
+  const video = $("cameraVideo");
+  if(!video.videoWidth || !video.videoHeight){
+    alert("La cámara todavía no está lista.");
+    return;
+  }
+  if(photoLimitReached()){
+    alert("Ya llegaste al máximo de 5 fotos.");
+    return;
+  }
+  const maxSize = 1200;
+  let width = video.videoWidth;
+  let height = video.videoHeight;
+  if(width > height && width > maxSize){
+    height = Math.round((height * maxSize) / width);
+    width = maxSize;
+  }else if(height >= width && height > maxSize){
+    width = Math.round((width * maxSize) / height);
+    height = maxSize;
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, width, height);
+  state.formPhotos.push(canvas.toDataURL("image/jpeg", 0.82));
+  renderPhotoPreview();
+  closeCameraModal();
+}
+function closeCameraModal(){
+  stopCameraStream();
+  $("cameraModal").classList.remove("open");
+}
+async function handlePhotoFiles(files){
+  const selected = Array.from(files || []);
+  if(!selected.length) return;
+  const remaining = 5 - state.formPhotos.length;
+  const usable = selected.slice(0, remaining);
+  for(const file of usable){
+    const data = await resizeImageFile(file);
+    state.formPhotos.push(data);
+  }
+  renderPhotoPreview();
+  if(selected.length > remaining){
+    alert("Solo se permiten hasta 5 fotos por producto.");
+  }
+}
+function getProductForm(){
+  const customCategory = $("pNewCategory").value.trim();
+  const selectedCategory = $("pCategory").value.trim();
+  const category = customCategory || selectedCategory;
+  return {
+    id: state.editingId || uid(),
+    sku: $("pSku").value.trim(),
+    name: $("pName").value.trim(),
+    category,
+    location: $("pLocation").value.trim(),
+    stock: Number($("pStock").value || 0),
+    minStock: Number($("pMin").value || 0),
+    cost: Number($("pCost").value || 0),
+    price: Number($("pPrice").value || 0),
+    condition: $("pCondition").value,
+    notes: $("pNotes").value.trim(),
+    photos: [...state.formPhotos]
+  };
+}
+function addMovement({product, type, qty, reference, beforeStock, afterStock}){
+  state.movements.unshift({
+    id: uid(),
+    productId: product.id,
+    productName: product.name,
+    type,
+    qty,
+    reference: reference || "",
+    beforeStock,
+    afterStock,
+    workerName: state.user?.name || "Sistema",
+    createdAt: nowISO()
+  });
+  state.movements = state.movements.slice(0, 1500);
+}
+function saveProduct(){
+  const p = getProductForm();
+  if(!p.sku || !p.name){
+    alert("Completa al menos código y nombre.");
+    return;
+  }
+  if(!p.category){
+    alert("Selecciona o escribe una categoría.");
+    return;
+  }
+
+  const existingIndex = state.products.findIndex(x => x.id === p.id);
+  if(existingIndex >= 0){
+    const previous = state.products[existingIndex];
+    const updated = {
+      ...previous,
+      ...p,
+      createdAt: previous.createdAt || nowISO(),
+      updatedAt: nowISO()
+    };
+    state.products[existingIndex] = normalizeProduct(updated);
+    if(Number(previous.stock) !== Number(updated.stock)){
+      addMovement({
+        product: updated,
+        type: "adjustment",
+        qty: Math.abs(Number(updated.stock) - Number(previous.stock)),
+        reference: "Edición de inventario",
+        beforeStock: Number(previous.stock),
+        afterStock: Number(updated.stock)
+      });
+    }
+  }else{
+    const created = normalizeProduct({
+      ...p,
+      createdAt: nowISO(),
+      updatedAt: nowISO()
+    });
+    state.products.unshift(created);
+    if(Number(created.stock) > 0){
+      addMovement({
+        product: created,
+        type: "entry",
+        qty: Number(created.stock),
+        reference: "Producto agregado",
+        beforeStock: 0,
+        afterStock: Number(created.stock)
+      });
+    }
+  }
+
+  saveStore();
+  populateCategorySelects();
+  resetProductForm();
+  renderAll();
+}
+function editProduct(id){
+  const p = state.products.find(x => x.id === id);
+  if(!p) return;
+  state.editingId = id;
+  state.formPhotos = [...(p.photos || [])];
+  $("editBadge").textContent = "Editando";
+  $("pSku").value = p.sku;
+  $("pName").value = p.name;
+  $("pCategory").value = getAllCategories().includes(p.category) ? p.category : "";
+  $("pNewCategory").value = getAllCategories().includes(p.category) ? "" : (p.category || "");
+  $("pLocation").value = p.location || "";
+  $("pStock").value = p.stock;
+  $("pMin").value = p.minStock;
+  $("pCost").value = p.cost;
+  $("pPrice").value = p.price;
+  $("pCondition").value = p.condition || "NUEVO";
+  $("pNotes").value = p.notes || "";
+  $("pPhotos").value = "";
+  $("photoPasteZone").classList.remove("active");
+  renderPhotoPreview();
+  setFormMeta(p);
+  switchSection("inventory");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function deleteProduct(id){
+  if(!confirm("¿Eliminar este producto?")) return;
+  state.products = state.products.filter(x => x.id !== id);
+  state.cart = state.cart.filter(x => x.productId !== id);
+  saveStore();
+  renderAll();
+}
+function inventoryFiltered(){
+  const q = $("searchInventory").value.trim().toLowerCase();
+  const cat = $("filterCategory").value;
+  const condition = $("filterCondition").value;
+  const sort = $("sortInventory").value;
+  let rows = state.products.filter(p => {
+    const okQ = !q || [p.sku,p.name,p.category,p.location,p.notes].join(" ").toLowerCase().includes(q);
+    const okC = !cat || p.category === cat;
+    const okCondition = !condition || p.condition === condition;
+    return okQ && okC && okCondition;
+  });
+
+  rows.sort((a,b) => {
+    if(sort === "name_asc") return a.name.localeCompare(b.name);
+    if(sort === "stock_desc") return Number(b.stock) - Number(a.stock);
+    if(sort === "stock_asc") return Number(a.stock) - Number(b.stock);
+    if(sort === "created_desc") return (b.createdAt || "").localeCompare(a.createdAt || "");
+    return (b.updatedAt || "").localeCompare(a.updatedAt || "");
+  });
+
+  return rows;
+}
+function renderInventory(){
+  const rows = inventoryFiltered();
+  $("inventoryTable").innerHTML = rows.length ? rows.map(p => `
+    <tr>
+      <td>
+        <div class="inventory-photo-cell">
+          ${p.photos?.[0] ? `<img class="thumb" src="${p.photos[0]}" alt="Foto" onclick="openProductPhotos('${p.id}')" style="cursor:pointer">` : `<div class="thumb"></div>`}
+        </div>
+      </td>
+      <td>
+        <strong>${escapeHtml(p.name)}</strong>
+        <div class="tiny muted">${escapeHtml(p.sku)} · ${escapeHtml(p.location || "-")}</div>
+      </td>
+      <td>${escapeHtml(p.category || "-")}</td>
+      <td>${Number(p.stock)}</td>
+      <td>${Number(p.minStock)}</td>
+      <td>${money(p.cost)}</td>
+      <td>${money(p.price)}</td>
+      <td>${conditionChip(p.condition)}</td>
+      <td>${statusChip(stockStatus(p))}</td>
+      <td>${formatDate(p.createdAt)}</td>
+      <td>${formatDate(p.updatedAt)}</td>
+      <td>
+        <div class="inventory-actions">
+          ${p.photos?.length ? `<button class="btn btn-soft" onclick="openProductPhotos('${p.id}')">Ver fotos</button>` : ``}
+          <button class="btn btn-soft" onclick="editProduct('${p.id}')">Editar</button>
+          <button class="btn btn-danger" onclick="deleteProduct('${p.id}')">Eliminar</button>
+        </div>
+      </td>
+    </tr>
+  `).join("") : `<tr><td colspan="12" class="empty">No hay productos</td></tr>`;
+}
+function saleProductsFiltered(){
+  const q = $("searchSales").value.trim().toLowerCase();
+  const cat = $("salesCategory").value;
+  const av = $("salesAvailability").value;
+  return state.products.filter(p => {
+    const okQ = !q || [p.sku,p.name,p.category,p.location].join(" ").toLowerCase().includes(q);
+    const okC = !cat || p.category === cat;
+    const okA = !av || (av === "available" ? Number(p.stock) > 0 : Number(p.stock) <= Number(p.minStock));
+    return okQ && okC && okA;
+  }).sort((a,b)=>a.name.localeCompare(b.name));
+}
+function addToCart(id){
+  const p = state.products.find(x => x.id === id);
+  if(!p) return;
+  if(Number(p.stock) <= 0) return alert("Producto sin stock.");
+  const existing = state.cart.find(x => x.productId === id);
+  if(existing){
+    if(existing.qty + 1 > Number(p.stock)) return alert("No hay suficiente stock.");
+    existing.qty += 1;
+  }else{
+    state.cart.push({productId:id, qty:1});
+  }
+  renderSales();
+}
+function setCartQty(id, qty){
+  const p = state.products.find(x => x.id === id);
+  const item = state.cart.find(x => x.productId === id);
+  if(!p || !item) return;
+  qty = Number(qty || 1);
+  if(qty <= 0){
+    state.cart = state.cart.filter(x => x.productId !== id);
+  }else{
+    if(qty > Number(p.stock)) return alert("No hay suficiente stock.");
+    item.qty = qty;
+  }
+  renderSales();
+}
+function removeCartItem(id){
+  state.cart = state.cart.filter(x => x.productId !== id);
+  renderSales();
+}
+function renderSales(){
+  const products = saleProductsFiltered();
+  $("salesProducts").innerHTML = products.length ? products.map(p => `
+    <div class="product-card">
+      <div class="space-between">
+        <div class="inventory-photo-cell">
+          ${p.photos?.[0] ? `<img class="thumb big" src="${p.photos[0]}" alt="Foto" onclick="openProductPhotos('${p.id}')" style="cursor:pointer">` : `<div class="thumb big"></div>`}
+          <div>
+            <h4>${escapeHtml(p.name)}</h4>
+            <div class="small muted">${escapeHtml(p.sku)} · ${escapeHtml(p.category || "-")}</div>
+          </div>
+        </div>
+      </div>
+      <div class="space-between">
+        <span>${money(p.price)}</span>
+        ${statusChip(stockStatus(p))}
+      </div>
+      <div class="small">Condición: ${escapeHtml(p.condition)} · Stock: <strong>${Number(p.stock)}</strong></div>
+      <div class="footer-actions">
+        ${p.photos?.length ? `<button class="btn btn-soft" onclick="openProductPhotos('${p.id}')">Ver foto</button>` : ``}
+        <button class="btn btn-primary" onclick="addToCart('${p.id}')">Agregar</button>
+      </div>
+    </div>
+  `).join("") : `<div class="empty">No hay productos para vender</div>`;
+
+  let subtotal = 0;
+  $("cartList").innerHTML = state.cart.length ? state.cart.map(item => {
+    const p = state.products.find(x => x.id === item.productId);
+    if(!p) return "";
+    const total = Number(item.qty) * Number(p.price);
+    subtotal += total;
+    return `
+      <div class="cart-item">
+        <div class="space-between">
+          <div class="inventory-photo-cell">
+            ${p.photos?.[0] ? `<img class="thumb" src="${p.photos[0]}" alt="Foto">` : `<div class="thumb"></div>`}
+            <div>
+              <strong>${escapeHtml(p.name)}</strong>
+              <div class="small muted">${escapeHtml(p.sku)} · Stock: ${Number(p.stock)}</div>
+            </div>
+          </div>
+          <button class="btn btn-danger" onclick="removeCartItem('${p.id}')">Quitar</button>
+        </div>
+        <div class="grid-2" style="margin-top:10px">
+          <input type="number" min="1" max="${Number(p.stock)}" value="${Number(item.qty)}" onchange="setCartQty('${p.id}', this.value)">
+          <div class="note"><div class="space-between"><span>Total</span><strong>${money(total)}</strong></div></div>
+        </div>
+      </div>
+    `;
+  }).join("") : `<div class="empty">El carrito está vacío</div>`;
+
+  const discount = Number($("saleDiscount").value || 0);
+  const total = Math.max(0, subtotal - discount);
+  $("cartSubtotal").textContent = money(subtotal);
+  $("cartDiscountView").textContent = money(discount);
+  $("cartTotal").textContent = money(total);
+  $("cartCount").textContent = `${state.cart.length} items`;
+}
+function confirmSale(){
+  if(!state.cart.length) return alert("El carrito está vacío.");
+  const discount = Number($("saleDiscount").value || 0);
+  const items = [];
+  let subtotal = 0;
+
+  for(const item of state.cart){
+    const p = state.products.find(x => x.id === item.productId);
+    if(!p) continue;
+    if(Number(item.qty) > Number(p.stock)) return alert(`No hay suficiente stock para ${p.name}.`);
+    const lineTotal = Number(item.qty) * Number(p.price);
+    subtotal += lineTotal;
+    items.push({
+      productId: p.id,
+      sku: p.sku,
+      name: p.name,
+      qty: Number(item.qty),
+      unitPrice: Number(p.price),
+      unitCost: Number(p.cost),
+      lineTotal
+    });
+  }
+
+  const total = Math.max(0, subtotal - discount);
+  const sale = {
+    id: uid(),
+    saleNumber: "V-" + Date.now(),
+    client: $("saleClient").value.trim() || "",
+    payment: $("salePayment").value,
+    subtotal,
+    discount,
+    total,
+    items,
+    workerName: state.user?.name || "Sistema",
+    createdAt: nowISO()
+  };
+
+  const lowAlerts = [];
+  for(const item of items){
+    const p = state.products.find(x => x.id === item.productId);
+    const before = Number(p.stock);
+    p.stock = Math.max(0, Number(p.stock) - Number(item.qty));
+    p.updatedAt = nowISO();
+    addMovement({
+      product: p,
+      type: "sale_out",
+      qty: item.qty,
+      reference: sale.saleNumber,
+      beforeStock: before,
+      afterStock: p.stock
+    });
+    if(Number(p.stock) <= Number(p.minStock)){
+      lowAlerts.push(`${p.name} quedó en ${p.stock} / mínimo ${p.minStock}`);
+    }
+  }
+
+  state.sales.unshift(sale);
+  state.cart = [];
+  $("saleClient").value = "";
+  $("saleDiscount").value = 0;
+  $("salePayment").value = "Efectivo";
+  saveStore();
+  renderAll();
+  alert(`Venta registrada correctamente. Total: ${money(total)}${lowAlerts.length ? `\n\nPendientes de compra:\n- ${lowAlerts.join("\n- ")}` : ""}`);
+}
+function renderHistory(){
+  const q = $("historySearch").value.trim().toLowerCase();
+  const type = $("historyType").value;
+  const today = $("historyToday").value;
+  const rows = state.movements.filter(m => {
+    const okQ = !q || [m.productName,m.reference,m.workerName,m.type].join(" ").toLowerCase().includes(q);
+    const okT = !type || m.type === type;
+    const okD = !today || (m.createdAt || "").slice(0,10) === todayLocalDate();
+    return okQ && okT && okD;
+  });
+  $("historyTable").innerHTML = rows.length ? rows.map(m => `
+    <tr>
+      <td>${formatDate(m.createdAt)}</td>
+      <td>${escapeHtml(m.type)}</td>
+      <td>${escapeHtml(m.productName || "-")}</td>
+      <td>${Number(m.qty)}</td>
+      <td>${escapeHtml(m.reference || "-")}</td>
+      <td>${escapeHtml(m.workerName || "-")}</td>
+      <td>${Number(m.beforeStock ?? 0)} → ${Number(m.afterStock ?? 0)}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="7" class="empty">No hay movimientos</td></tr>`;
+}
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(getStorePayload(), null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `inventario-v2plus-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importJSON(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const data = JSON.parse(e.target.result);
+      applyStorePayload(data);
+      saveStore();
+      renderAll();
+      alert("Importación completada.");
+    }catch{
+      alert("JSON inválido.");
+    }
+  };
+  reader.readAsText(file);
+}
+function getStorePayload(){
+  return {
+    meta: {
+      app: "Inventario THE BOSS HN",
+      exportedAt: nowISO(),
+      deviceId: state.deviceId
+    },
+    products: state.products,
+    sales: state.sales,
+    movements: state.movements
+  };
+}
+function applyStorePayload(data){
+  state.products = Array.isArray(data.products) ? data.products.map(normalizeProduct) : [];
+  state.sales = Array.isArray(data.sales) ? data.sales : [];
+  state.movements = Array.isArray(data.movements) ? data.movements : [];
+  state.cart = [];
+  state.formPhotos = [];
+}
+function seedExample(){
+  if(!confirm("¿Cargar datos de ejemplo?")) return;
+  state.products = [
+    normalizeProduct({id:uid(), sku:"GOR-001", name:"Gorro negro premium", category:"Ropa y Calzado", location:"A1", stock:12, minStock:20, cost:90, price:180, condition:"NUEVO", notes:"Gorra clásica", photos:[], createdAt:nowISO(), updatedAt:nowISO()}),
+    normalizeProduct({id:uid(), sku:"CAM-001", name:"Camisa urbana", category:"Ropa y Calzado", location:"A2", stock:6, minStock:8, cost:180, price:320, condition:"USADO COMO NUEVO", notes:"Talla M y L", photos:[], createdAt:nowISO(), updatedAt:nowISO()}),
+    normalizeProduct({id:uid(), sku:"INT-001", name:"Intercom K06", category:"Auto y Moto", location:"B1", stock:2, minStock:2, cost:850, price:1250, condition:"NUEVO", notes:"Bluetooth casco", photos:[], createdAt:nowISO(), updatedAt:nowISO()})
+  ];
+  state.sales = [];
+  state.movements = [];
+  state.cart = [];
+  saveStore();
+  populateCategorySelects();
+  renderAll();
+}
+function resetAllData(){
+  if(!confirm("¿Vaciar inventario, ventas e historial?")) return;
+  state.products = [];
+  state.sales = [];
+  state.movements = [];
+  state.cart = [];
+  state.formPhotos = [];
+  saveStore();
+  resetProductForm();
+  renderAll();
+}
+function switchSection(name){
+  document.querySelectorAll(".nav .btn").forEach(b => b.classList.toggle("active", b.dataset.section === name));
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  $("section-" + name).classList.add("active");
+}
+function openPhotoViewer(title, photos, startIndex = 0){
+  if(!photos?.length) return;
+  state.photoViewer = {title, photos, index:startIndex};
+  $("photoModal").classList.add("open");
+  renderPhotoViewer();
+}
+function openProductPhotos(productId){
+  const p = state.products.find(x => x.id === productId);
+  if(!p || !p.photos?.length) return;
+  openPhotoViewer(p.name, p.photos, 0);
+}
+function renderPhotoViewer(){
+  const {title, photos, index} = state.photoViewer;
+  if(!photos.length) return;
+  $("photoModalTitle").textContent = title || "Fotos del producto";
+  $("photoModalCounter").textContent = `${index + 1} / ${photos.length}`;
+  $("photoModalImage").src = photos[index];
+  $("photoModalThumbs").innerHTML = photos.map((src, i) => `
+    <img class="thumb ${i === index ? 'big' : ''}" src="${src}" alt="Foto ${i+1}" style="cursor:pointer; opacity:${i===index?1:.7}" onclick="jumpPhoto(${i})">
+  `).join("");
+}
+function closePhotoViewer(){
+  $("photoModal").classList.remove("open");
+}
+function prevPhoto(){
+  if(!state.photoViewer.photos.length) return;
+  state.photoViewer.index = (state.photoViewer.index - 1 + state.photoViewer.photos.length) % state.photoViewer.photos.length;
+  renderPhotoViewer();
+}
+function nextPhoto(){
+  if(!state.photoViewer.photos.length) return;
+  state.photoViewer.index = (state.photoViewer.index + 1) % state.photoViewer.photos.length;
+  renderPhotoViewer();
+}
+function jumpPhoto(index){
+  state.photoViewer.index = index;
+  renderPhotoViewer();
+}
+document.addEventListener("keydown", (e)=>{
+  if($("cameraModal").classList.contains("open") && e.key === "Escape") closeCameraModal();
+  if(!$("photoModal").classList.contains("open")) return;
+  if(e.key === "Escape") closePhotoViewer();
+  if(e.key === "ArrowLeft") prevPhoto();
+  if(e.key === "ArrowRight") nextPhoto();
+});
+async function githubGetFile({token, owner, repo, path, branch}){
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`;
+  const res = await fetch(url, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/vnd.github+json"
+    }
+  });
+  if(res.status === 404) return null;
+  if(!res.ok){
+    const txt = await res.text();
+    throw new Error(`Error al leer GitHub: ${res.status} ${txt}`);
+  }
+  return await res.json();
+}
+function utf8ToBase64(str){
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function base64ToUtf8(str){
+  return decodeURIComponent(escape(atob(str.replace(/\n/g,""))));
+}
+async function githubPutFile({token, owner, repo, path, branch, message, content, sha}){
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+  const body = {
+    message,
+    content: utf8ToBase64(content),
+    branch
+  };
+  if(sha) body.sha = sha;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/vnd.github+json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok){
+    const txt = await res.text();
+    throw new Error(`Error al subir a GitHub: ${res.status} ${txt}`);
+  }
+  return await res.json();
+}
+function getSyncConfig(){
+  return {
+    token: $("ghToken").value.trim(),
+    owner: $("ghOwner").value.trim(),
+    repo: $("ghRepo").value.trim(),
+    branch: $("ghBranch").value.trim() || "main",
+    path: $("ghPath").value.trim() || "data/store.json"
+  };
+}
+function validateSyncCfg(cfg){
+  if(!cfg.token) return "Escribe el token.";
+  if(!cfg.owner || !cfg.repo) return "Completa owner y repo.";
+  if(!cfg.path) return "Escribe la ruta del archivo.";
+  return "";
+}
+async function pullFromGithub(){
+  const cfg = getSyncConfig();
+  const err = validateSyncCfg(cfg);
+  if(err){
+    $("syncStatus").innerHTML = `<div class="danger-box">${escapeHtml(err)}</div>`;
+    return;
+  }
+  try{
+    $("syncStatus").innerHTML = `<div class="warn-box">Cargando datos desde GitHub...</div>`;
+    const file = await githubGetFile(cfg);
+    if(!file){
+      $("syncStatus").innerHTML = `<div class="warn-box">El archivo no existe aún en GitHub. Puedes subirlo por primera vez.</div>`;
+      return;
+    }
+    const text = base64ToUtf8(file.content);
+    const data = JSON.parse(text);
+    applyStorePayload(data);
+    saveStore();
+    state.dirty = false;
+    renderAll();
+    $("syncStatus").innerHTML = `<div class="ok-box">Datos cargados desde GitHub correctamente.</div>`;
+  }catch(err){
+    $("syncStatus").innerHTML = `<div class="danger-box">${escapeHtml(err.message || "No se pudo cargar desde GitHub.")}</div>`;
+  }
+}
+async function pushToGithub(){
+  const cfg = getSyncConfig();
+  const err = validateSyncCfg(cfg);
+  if(err){
+    $("syncStatus").innerHTML = `<div class="danger-box">${escapeHtml(err)}</div>`;
+    return;
+  }
+  try{
+    $("syncStatus").innerHTML = `<div class="warn-box">Subiendo datos a GitHub...</div>`;
+    const file = await githubGetFile(cfg);
+    const sha = file?.sha;
+    const payload = JSON.stringify(getStorePayload(), null, 2);
+    await githubPutFile({
+      ...cfg,
+      sha,
+      message: `Actualizar store del inventario (${new Date().toLocaleString("es-HN")})`,
+      content: payload
+    });
+    state.dirty = false;
+    renderAll();
+    $("syncStatus").innerHTML = `<div class="ok-box">Datos subidos correctamente a GitHub.</div>`;
+    if($("rememberToken").checked && cfg.token){
+      sessionStorage.setItem(CONFIG_KEY + "_token", cfg.token);
+    }
+  }catch(err){
+    $("syncStatus").innerHTML = `<div class="danger-box">${escapeHtml(err.message || "No se pudo subir a GitHub.")}</div>`;
+  }
+}
+function renderAll(){
+  populateCategorySelects();
+  renderSyncBadge();
+  renderStats();
+  renderDashboard();
+  renderInventory();
+  renderSales();
+  renderHistory();
+}
+function bootEvents(){
+  $("btnEnter").addEventListener("click", ()=>doLogin("normal"));
+  $("btnDemo").addEventListener("click", ()=>doLogin("demo"));
+  $("btnLogout").addEventListener("click", logout);
+
+  document.querySelectorAll(".nav .btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>switchSection(btn.dataset.section));
+  });
+
+  $("btnSaveProduct").addEventListener("click", saveProduct);
+  $("btnClearProduct").addEventListener("click", resetProductForm);
+  $("btnSeed").addEventListener("click", seedExample);
+  $("btnResetAll").addEventListener("click", resetAllData);
+  $("btnPickPhotos").addEventListener("click", ()=> $("pPhotos").click());
+  $("btnOpenCamera").addEventListener("click", openCameraModal);
+  $("pPhotos").addEventListener("change", async (e)=>{
+    await handlePhotoFiles(e.target.files);
+    e.target.value = "";
+  });
+  $("photoPasteZone").addEventListener("click", ()=> $("photoPasteZone").focus());
+  $("photoPasteZone").addEventListener("paste", handlePhotoPaste);
+  $("photoPasteZone").addEventListener("dragenter", (e)=>{ e.preventDefault(); $("photoPasteZone").classList.add("active"); });
+  $("photoPasteZone").addEventListener("dragover", (e)=>{ e.preventDefault(); $("photoPasteZone").classList.add("active"); });
+  $("photoPasteZone").addEventListener("dragleave", ()=> $("photoPasteZone").classList.remove("active"));
+  $("photoPasteZone").addEventListener("drop", handlePhotoDrop);
+
+  $("searchInventory").addEventListener("input", renderInventory);
+  $("filterCategory").addEventListener("change", ()=>{
+      renderInventory();
+  });
+  $("sortInventory").addEventListener("change", renderInventory);
+  $("filterCondition").addEventListener("change", renderInventory);
+  $("btnClearFilters").addEventListener("click", ()=>{
+    $("searchInventory").value = "";
+    $("filterCategory").value = "";
+    $("sortInventory").value = "updated_desc";
+    $("filterCondition").value = "";
+      renderInventory();
+  });
+
+  $("searchSales").addEventListener("input", renderSales);
+  $("salesCategory").addEventListener("change", ()=>{
+      renderSales();
+  });
+  $("salesAvailability").addEventListener("change", renderSales);
+  $("saleDiscount").addEventListener("input", renderSales);
+  $("btnRefreshSales").addEventListener("click", renderSales);
+  $("btnClearCart").addEventListener("click", ()=>{state.cart=[]; renderSales();});
+  $("btnConfirmSale").addEventListener("click", confirmSale);
+
+  $("historySearch").addEventListener("input", renderHistory);
+  $("historyType").addEventListener("change", renderHistory);
+  $("historyToday").addEventListener("change", renderHistory);
+  $("btnRefreshHistory").addEventListener("click", renderHistory);
+  $("btnExportHistory").addEventListener("click", ()=> {
+    const blob = new Blob([JSON.stringify(state.movements, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `historial-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  $("btnExport").addEventListener("click", exportJSON);
+  $("btnImport").addEventListener("click", ()=>$("importFile").click());
+  $("importFile").addEventListener("change", e=>{
+    const f = e.target.files?.[0];
+    if(f) importJSON(f);
+    e.target.value = "";
+  });
+
+  $("btnSaveConfig").addEventListener("click", saveConfig);
+  $("btnClearToken").addEventListener("click", clearSavedToken);
+  $("btnPull").addEventListener("click", pullFromGithub);
+  $("btnPush").addEventListener("click", pushToGithub);
+
+  $("btnClosePhoto").addEventListener("click", closePhotoViewer);
+  $("btnPrevPhoto").addEventListener("click", prevPhoto);
+  $("btnNextPhoto").addEventListener("click", nextPhoto);
+  $("photoModal").addEventListener("click", (e)=>{
+    if(e.target.id === "photoModal") closePhotoViewer();
+  });
+
+  $("btnCloseCamera").addEventListener("click", closeCameraModal);
+  $("btnRetryCamera").addEventListener("click", startCameraStream);
+  $("btnCaptureCamera").addEventListener("click", captureCameraPhoto);
+  $("cameraModal").addEventListener("click", (e)=>{
+    if(e.target.id === "cameraModal") closeCameraModal();
+  });
+  window.addEventListener("beforeunload", stopCameraStream);
+}
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
+window.addToCart = addToCart;
+window.setCartQty = setCartQty;
+window.removeCartItem = removeCartItem;
+window.removeFormPhoto = removeFormPhoto;
+window.openProductPhotos = openProductPhotos;
+window.jumpPhoto = jumpPhoto;
+
+(async function init(){
+  state.deviceId = await getDeviceId();
+  console.log("KEYAUTH_CONFIG:", KEYAUTH_CONFIG);
+  $("deviceView").value = state.deviceId;
+  loadStore();
+  loadSession();
+  loadConfig();
+  bootEvents();
+  resetProductForm();
+  if(state.user && state.user.deviceId === state.deviceId) showApp();
+  else showLogin();
+})();
+</script>
+
+<div id="cameraModal" class="modal">
+  <div class="modal-card">
+    <div class="space-between" style="margin-bottom:12px">
+      <div>
+        <div class="title" style="font-size:1.2rem">Tomar foto</div>
+        <div class="subtitle small">Usa la cámara del móvil o PC para agregar una imagen al producto.</div>
+      </div>
+      <button class="btn btn-soft" id="btnCloseCamera">Cerrar</button>
+    </div>
+    <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
+    <div class="camera-actions">
+      <button class="btn btn-primary" id="btnCaptureCamera" type="button">Capturar foto</button>
+      <button class="btn btn-soft" id="btnRetryCamera" type="button">Reiniciar cámara</button>
+    </div>
+    <div class="mini-note">En algunos navegadores primero te pedirá permiso para usar la cámara.</div>
+  </div>
+</div>
+
+</body>
+</html>
